@@ -1,0 +1,13 @@
+/obj
+/bin
+/LocalStack.UnitTests/bin
+/LocalStack.UnitTests/obj
+/LocalStack.Api/bin
+/LocalStack.Api/obj
+LocalStack.Repository/bin
+LocalStack.Repository/obj
+LocalStack.Services/bin
+LocalStack.Services/obj
+LocalStack.Models/bin
+LocalStack.Models/obj
+.vscode
