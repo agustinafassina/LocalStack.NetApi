@@ -3,7 +3,7 @@
 ### Health
 GET {{host}}/health
 
-### Health (ready — includes S3)
+### Health (ready - includes S3)
 GET {{host}}/health/ready
 
 ### Items
@@ -17,15 +17,15 @@ Content-Type: application/json
   "name": "test item"
 }
 
-### Files — list
+### Files - list
 GET {{host}}/api/v1/file/list
 
-### Files — upload (replace the file path)
+### Files - upload (replace the file path)
 # POST {{host}}/api/v1/file/upload
 # Content-Type: multipart/form-data; boundary=----Boundary
 
-### Files — download
+### Files - download
 # GET {{host}}/api/v1/file/download/{key}
 
-### Files — delete
+### Files - delete
 # DELETE {{host}}/api/v1/file/{key}
