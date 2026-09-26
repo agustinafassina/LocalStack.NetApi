@@ -6,17 +6,6 @@ GET {{host}}/health
 ### Health (ready - includes S3)
 GET {{host}}/health/ready
 
-### Items
-GET {{host}}/api/v1/item/test
-
-###
-POST {{host}}/api/v1/item/test
-Content-Type: application/json
-
-{
-  "name": "test item"
-}
-
 ### Files - list
 GET {{host}}/api/v1/file/list
 
@@ -26,6 +15,15 @@ GET {{host}}/api/v1/file/list
 
 ### Files - download
 # GET {{host}}/api/v1/file/download/{key}
+
+### Files - exists (HEAD)
+# HEAD {{host}}/api/v1/file/{key}
+
+### Files - metadata
+# GET {{host}}/api/v1/file/metadata/{key}
+
+### Files - presign (GET by default, or verb=PUT)
+# GET {{host}}/api/v1/file/presign/{key}?verb=GET&expiresInMinutes=15
 
 ### Files - delete
 # DELETE {{host}}/api/v1/file/{key}

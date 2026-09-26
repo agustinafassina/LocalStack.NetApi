@@ -8,5 +8,8 @@ namespace LocalStack.Services.Interfaces
         Task<StoredFileDto?> GetAsync(string key, CancellationToken cancellationToken = default);
         Task<FileListResultDto> ListKeysAsync(CancellationToken cancellationToken = default);
         Task DeleteAsync(string key, CancellationToken cancellationToken = default);
+        Task<bool> ExistsAsync(string key, CancellationToken cancellationToken = default);
+        Task<FileMetadataDto?> GetMetadataAsync(string key, CancellationToken cancellationToken = default);
+        Task<PresignedUrlDto> GetPresignedUrlAsync(string key, string verb = "GET", int expiresInMinutes = 15, CancellationToken cancellationToken = default);
     }
 }

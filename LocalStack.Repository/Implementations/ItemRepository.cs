@@ -19,8 +19,8 @@ namespace LocalStack.Repository.Implementations
 
         public ItemDto Add(ItemDto item)
         {
-            bool newId = _items.Any() ? _items.Max(i => i.Id) + 1 : 1;
-            var newItem = new ItemDto { Id = newId, Name = item.Name };
+            int newId = _items.Any() ? _items.Max(i => i.Id) + 1 : 1;
+            ItemDto newItem = new ItemDto { Id = newId, Name = item.Name };
             _items.Add(newItem);
             return newItem;
         }

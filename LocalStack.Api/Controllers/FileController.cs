@@ -37,7 +37,7 @@ namespace LocalStack.Api.Controllers
             if (file.Length > _options.MaxUploadBytes)
                 return BadRequest($"File exceeds maximum size of {_options.MaxUploadBytes / (1024 * 1024)} MB.");
 
-            Guid objectKey = key ?? $"{Guid.NewGuid():N}_{file.FileName}";
+            var objectKey = key ?? $"{Guid.NewGuid():N}_{file.FileName}";
 
             try
             {
@@ -66,11 +66,11 @@ namespace LocalStack.Api.Controllers
         {
             try
             {
-                HttpResponseMessage stored = await _storageService.GetAsync(key, cancellationToken);
+                var stored = await _storageService.GetAsync(key, cancellationToken);
                 if (stored == null)
                     return NotFound($"Object with key '{key}' not found.");
 
-                string? fileName = key.Contains('/') ? Path.GetFileName(key) : key;
+                var fileName = key.Contains('/') ? Path.GetFileName(key) : key;
                 return File(stored.Content, stored.ContentType, fileName);
             }
             catch (ArgumentException ex)
@@ -85,6 +85,69 @@ namespace LocalStack.Api.Controllers
         {
             var result = await _storageService.ListKeysAsync(cancellationToken);
             return Ok(result);
+        }
+
+        [HttpHead("{*key}")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<IActionResult> Exists(string key, CancellationToken cancellationToken = default)
+        {
+            try
+            {
+                FileMetadataDto? metadata = await _storageService.GetMetadataAsync(key, cancellationToken);
+                if (metadata == null)
+                    return NotFound();
+
+                Response.Headers.ContentLength = metadata.ContentLength;
+                Response.Headers.ContentType = metadata.ContentType;
+                if (!string.IsNullOrEmpty(metadata.ETag))
+                    Response.Headers.ETag = metadata.ETag;
+
+                return Ok();
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+        [HttpGet("metadata/{*key}")]
+        [ProducesResponseType(typeof(FileMetadataDto), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<IActionResult> Metadata(string key, CancellationToken cancellationToken = default)
+        {
+            try
+            {
+                FileMetadataDto? metadata = await _storageService.GetMetadataAsync(key, cancellationToken);
+                if (metadata == null)
+                    return NotFound($"Object with key '{key}' not found.");
+
+                return Ok(metadata);
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+        [HttpGet("presign/{*key}")]
+        [ProducesResponseType(typeof(PresignedUrlDto), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public async Task<IActionResult> Presign(
+            string key,
+            [FromQuery] string verb = "GET",
+            [FromQuery] int expiresInMinutes = 15,
+            CancellationToken cancellationToken = default)
+        {
+            try
+            {
+                PresignedUrlDto? result = await _storageService.GetPresignedUrlAsync(key, verb, expiresInMinutes, cancellationToken);
+                return Ok(result);
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(ex.Message);
+            }
         }
 
         [HttpDelete("{*key}")]

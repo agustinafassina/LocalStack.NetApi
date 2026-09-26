@@ -39,6 +39,9 @@ Settings live in `LocalStack.Api/appsettings.Development.json` under the `LocalS
 | POST | `/api/v1/file/upload` | Upload a file (`file`, optional `key`) |
 | GET | `/api/v1/file/download/{key}` | Download by key |
 | GET | `/api/v1/file/list` | List keys in the bucket |
+| HEAD | `/api/v1/file/{key}` | Check if the object exists |
+| GET | `/api/v1/file/metadata/{key}` | Get size, content-type, ETag |
+| GET | `/api/v1/file/presign/{key}` | Presigned URL (`verb`, `expiresInMinutes`) |
 | DELETE | `/api/v1/file/{key}` | Delete by key |
 
 You can also try the sample requests in `LocalStackApi.http`.
