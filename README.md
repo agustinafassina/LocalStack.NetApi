@@ -11,43 +11,48 @@ A .NET 10 Web API that uses LocalStack to simulate AWS S3 for file storage in lo
 - 🐳 Docker (for LocalStack)
 
 ## Structure 📦
-- **LocalStack.Api** - controllers, configuration, middleware
-- **LocalStack.Services** - application logic (`IStorageService`, items)
-- **LocalStack.Repository** - data access (in-memory)
+- **LocalStack.Api** - controllers, configuration, middleware, health checks
+- **LocalStack.Services** - storage and item logic
+- **LocalStack.Repository** - in-memory item data
 - **LocalStack.Models** - DTOs
+- **localstack-init** - creates `local-bucket` when the LocalStack container starts
 
 ## Run ▶️
+From the repo root:
+
 ```bash
-docker-compose up -d localstack
+docker compose up -d localstack
 dotnet run --project LocalStack.Api
 ```
 
-By default the API listens on `http://localhost:5142`. Swagger is available in Development at `/swagger`.
+The API listens on `http://localhost:5142`. Swagger (Development): `http://localhost:5142/swagger`.
 
-Useful checks:
-
-- `GET /health` - basic health
-- `GET /health/ready` - includes S3 / LocalStack connectivity
+- `GET /health` - all health checks (the S3 bucket)
+- `GET /health/ready` - checks tagged `ready` (S3 / LocalStack)
 
 ## LocalStack (S3) 🪣
-LocalStack runs at `http://localhost:4566`. The `local-bucket` bucket is created when the container starts or when the API boots.
+LocalStack listens on `http://localhost:4566`. The `local-bucket` bucket is created by `localstack-init/init-bucket.sh` when the container starts, and again when the API boots.
 
-Settings live in `LocalStack.Api/appsettings.Development.json` under the `LocalStack` section. To point at real AWS instead, leave `LocalStack:ServiceUrl` empty and use the standard `AWS` section.
+Settings are the `LocalStack` section in `LocalStack.Api/appsettings.json` (the same values are in `LocalStack.Api/appsettings.Development.json`). Leave `ServiceUrl` empty to use the default AWS S3 client.
 
 | Method | Route | Description |
 |--------|-------|-------------|
-| POST | `/api/v1/file/upload` | Upload a file (`file`, optional `key`) |
+| POST | `/api/v1/file/upload` | Upload a file (`file`, optional `key`). Max 10 MB |
 | GET | `/api/v1/file/download/{key}` | Download by key |
 | GET | `/api/v1/file/list` | List keys in the bucket |
 | HEAD | `/api/v1/file/{key}` | Check if the object exists |
-| GET | `/api/v1/file/metadata/{key}` | Get size, content-type, ETag |
+| GET | `/api/v1/file/metadata/{key}` | Size, content type, and ETag |
 | GET | `/api/v1/file/presign/{key}` | Presigned URL (`verb`, `expiresInMinutes`) |
 | DELETE | `/api/v1/file/{key}` | Delete by key |
 
-You can also try the sample requests in `LocalStackApi.http`.
+Sample requests are in `LocalStackApi.http`.
 
 ## Docker 🐳
+The image listens on port 80 (`ASPNETCORE_HTTP_PORTS`). This maps it to `http://localhost:8787` and points S3 at LocalStack on the host:
+
 ```bash
 docker build -f Dockerfile -t localstack-netapi:latest .
-docker run -d -p 8787:80 -e ASPNETCORE_ENVIRONMENT=Development --name localstack-netapi localstack-netapi:latest
+docker run -d -p 8787:80 -e ASPNETCORE_ENVIRONMENT=Development -e LocalStack__ServiceUrl=http://host.docker.internal:4566 --name localstack-netapi localstack-netapi:latest
 ```
+
+Swagger: `http://localhost:8787/swagger`.
